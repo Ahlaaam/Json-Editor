@@ -1,6 +1,8 @@
 class ViewerJson {
     constructor($parent, json) {
       let self = this;
+
+      /** The search and replace module */
       $parent.append("<div id='research'></div>");
       let $divResearch = $parent.children('#research');
   
@@ -15,8 +17,8 @@ class ViewerJson {
       $divReplace.append("<input type='text' class='replacementItem' value='name' placeholder='research'></input>  <input type='button' class='replace' value='Replace'></input>");
       $divReplace.children('.replace').get()[0].addEventListener('click', function(e){self.replace(e)})
   
-      self.jsonFile = json; //stocker le json du lien dans jsonFile
-      //jsonFile = JSON.parse('["monday",null,"wednesday","thursday","friday","tuesday", {"key1": "value1", "key2": "value2", "key3": "value3", "key4": ["coucou1", "coucou2", "coucou3"]} ]');
+      /** The editor module */
+      self.jsonFile = json; 
       if (Array.isArray(self.jsonFile)){
         $parent.append('<ul id="ulRoot"><li><span class="expandable jsonArray">json</span>  <i class="expandAll fas fa-angle-double-down"></i></li></ul>');
       }else{
@@ -26,7 +28,7 @@ class ViewerJson {
       self.addNormaleEventToSpan(self.$ulRoot.children('li').children('span'));
       let imgList = $parent.find('i.expandAll');
       for (let i = 0; i < imgList.length; i++) {
-        imgList[i].addEventListener("click", function(e){self.expendAllChild(e);}, true);
+        imgList[i].addEventListener("click", function(e){self.expandAllChildren(e);}, true);
       }
       self.modificationIsPossible = true;
       self.result = null;
@@ -35,7 +37,8 @@ class ViewerJson {
     get json() {
       return this.jsonFile();
     }
-  
+    
+    /**function called by an event to make the replacement */
     replace = function (e) {
       let self = this;
       let $this = $(e.target);
@@ -68,6 +71,7 @@ class ViewerJson {
       }
     }
   
+    /** function called by an event to make the search */
     research = function (e) {
       let self = this;
       let $this = $(e.target);
@@ -77,7 +81,6 @@ class ViewerJson {
       self.result = null;
       if (!(researchValue.length === 0)){
   
-        //let result = self.$ulRoot.find("[html = '" + researchValue + "']");
         if ($this.parent().children('.exactly').is(':checked')){
           self.result = self.$ulRoot.find("span:contains('" + researchValue + "')").filter(function() {
             return $(this).text() === researchValue;
@@ -99,10 +102,15 @@ class ViewerJson {
         $this.parent().children('.nbFound').append("*" + self.result.length)
       }
     }
-  
-    goToInJson = function (startSpan) {
+
+    /**
+     * used to get the json that contains the key or the value written in the $startSpan
+     * @param {*} $startSpan : jQuery object that contains a span (it is a span used to show a json key or value) 
+     * @return the json object that contains the desired key or value
+     */
+    goToInJson = function ($startSpan) {
       let self = this;
-      let parentsArray = startSpan.parents('ul');
+      let parentsArray = $startSpan.parents('ul');
       let counter = parentsArray.length - 1;
       while (parentsArray[counter].id != 'ulRoot' && counter > 0){
         counter --;
@@ -114,7 +122,12 @@ class ViewerJson {
       }
       return jsonValueOfKey;
     }
-  
+    
+    /**
+     * Converts the value of the $span.html() and gives the right CSS class to the span.
+     * @param {*} $span : jQuery object that contains a span (it is a span used to show a json key or value)
+     * @return {string, boolean, number} the $span.html() converts in the right type
+     */
     typeOfSpanValue = function ($span){
       $span.removeClass();
       $span.addClass("value");
@@ -152,7 +165,10 @@ class ViewerJson {
       }
     }
   
-  
+    /**
+     * Function called by an event to show the content of a Json object or table
+     * @param {*} e : event
+     */
     expand = function  (e) {
       let self = this;
   
@@ -163,8 +179,7 @@ class ViewerJson {
   
       if($this.parent().children('ul').length == 0) {
         let jsonValueOfKey = self.goToInJson($this);
-        //vérifier si le truc sur lequel on a cliqué est un tableau ou un objet
-        let htmlString = "<i class='addChild fas fa-plus'></i>"; //bouton pour ajouter des enfants
+        let htmlString = "<i class='addChild fas fa-plus'></i>"; //button to add children
         if(typeof jsonValueOfKey[$this.html()] == 'object') {
           htmlString += self.constructHtmlFromKeyArray(Object.keys(jsonValueOfKey[$this.html()]), jsonValueOfKey[$this.html()]);
         }
@@ -199,7 +214,7 @@ class ViewerJson {
         }
         imgList = $this.parent().children('ul').find('i.expandAll');
         for (i = 0; i < imgList.length; i++) {
-          imgList[i].addEventListener("click", function(e){self.expendAllChild(e)}, true);
+          imgList[i].addEventListener("click", function(e){self.expandAllChildren(e)}, true);
         }
   
         $this.parent().children('ul').children('addChild');
@@ -218,18 +233,25 @@ class ViewerJson {
         }
       }
     }
-  
-    expendAllChild = function (e){
+    /**
+     * Displays all the content of a Json object or table
+     * @param {*} e : event
+     */
+    expandAllChildren = function (e){
       let $this = $(e.target);
       let self = this;
       $this.parent().children(".expandable").click();
       let tabOfChild = $this.parent().children("ul").children("li").children(".expandable");
       for (let i = 0; i < tabOfChild.length; i++){
-        self.expendAllChildRec(tabOfChild[i]);
+        self.expandAllChildrenRec(tabOfChild[i]);
       }
     }
-  
-    expendAllChildRec = function ($spanToExpand){
+    
+    /**
+     * A recursive function used by expandAllChildren()
+     * @param {*} $spanToExpand 
+     */
+    expandAllChildrenRec = function ($spanToExpand){
       let self = this;
       $spanToExpand  = $($spanToExpand)
       if(!($spanToExpand.hasClass('expandable-down'))){
@@ -237,10 +259,14 @@ class ViewerJson {
       }
         let tabOfChild = $spanToExpand.parent().children("ul").children("li").children(".expandable");
         for (let i = 0; i < tabOfChild.length; i++){
-          self.expendAllChildRec(tabOfChild[i]);
+          self.expandAllChildrenRec(tabOfChild[i]);
         }
     }
-  
+
+    /**
+     * Adds a new Json key
+     * @param {*} e : event
+     */
     addChild = function (e){
       let self = this;
       if(self.modificationIsPossible == true) {
@@ -366,7 +392,10 @@ class ViewerJson {
               });
       }
     }
-  
+    /**
+     * Displays the modification menu
+     * @param {*} e : event
+     */
     modify = function (e) {
       let self = this;
       e.preventDefault();
@@ -374,16 +403,13 @@ class ViewerJson {
         self.modificationIsPossible = false;
         let $this = $(e.target);
   
-        //$this.get()[0].removeEventListener('click', this.expand, false); //no expansion during modification
-        //$this.get()[0].removeEventListener('contextmenu', this.modify, false); //no contextmenu (right click) during modification
-        //$this.get()[0].getEventListeners().click.forEach((e)=>{e.remove()});
         $this.parent().addClass("editing");
   
         let initialValue = $this.html();
         let textInput =  '<input type="text" id="newValue" name="lname" value=' + initialValue + '> </input>';
         let buttonInputValidation = '<i id="validateButton" class="far fa-check-circle"></i>  ';
         let buttonInputCancellation = '<i id="cancelButton" class="far fa-window-close"></i>  ';
-        //onclick="cancelModification(\'' + $this.get()[0] + '\',\'' + $this.html() + '\')"
+        
         $this.empty();
         $this.append(textInput);
         $this.append(buttonInputValidation);
@@ -400,7 +426,12 @@ class ViewerJson {
       }
   
     }
-  
+    
+    /**
+     * Modifies a Json key 
+     * @param {*} $this : the span that contains the modified key
+     * @param {*} initialValue 
+     */
     validateKeysModification = function ($this, initialValue) {
       let self = this;
       newValue = $("#newValue").val();
@@ -415,7 +446,12 @@ class ViewerJson {
       $this.parent().removeClass("editing");
       self.modificationIsPossible = true;
     }
-  
+    
+    /**
+     * Modifies a Json value 
+     * @param {*} $this : the span that contains the modified value
+     * @param {*} initialValue 
+     */
     validateValuesModification = function ($this, initialValue) {
       let self = this;
       let newValue = $("#newValue").val();
@@ -430,7 +466,12 @@ class ViewerJson {
       $this.parent().removeClass("editing");
       self.modificationIsPossible = true;
     }
-  
+    
+    /**
+     * Cancel the modification
+     * @param {*} $this : the span that contains the modified key or value
+     * @param {*} initialValue 
+     */
     cancelModification = function ($this, initialValue) {
       let self = this;
       $this.empty();
@@ -439,7 +480,11 @@ class ViewerJson {
       $this.parent().removeClass("editing");
       self.modificationIsPossible = true;
     }
-  
+    
+    /**
+     * Adds the events expand and modify to the $span if necessary 
+     * @param {*} $span 
+     */
     addNormaleEventToSpan = function ($span){
       let self = this;
       if($span.hasClass("expandable")) {
@@ -453,7 +498,11 @@ class ViewerJson {
         $span.get()[0].addEventListener("contextmenu", function(e){self.modify(e);}, false);
       }
     }
-  
+    
+    /**
+     * Deletes a line
+     * @param {*} e : event
+     */
     deleteLine = function (e){
       let self = this;
       if (self.modificationIsPossible){
@@ -464,6 +513,11 @@ class ViewerJson {
       }
     }
   
+    /**
+     * @returnss a string that contains the HTML
+     * @param {*} keysArray the list of Json keys
+     * @param {*} keysJson the Json object that contains these keys
+     */
     constructHtmlFromKeyArray = function (keysArray, keysJson) {
       let htmlString = "";
       let counter = 0; //for the span object id
