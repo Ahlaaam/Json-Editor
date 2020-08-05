@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="style.css">
+  <script src="node_modules/jquery/dist/jquery.js"> </script>
+  <script src="https://kit.fontawesome.com/3c41f5f24f.js" crossorigin="anonymous"> </script>
+  <script language='javascript' src="script/jsonViewer.js"></script>
+  <title>Document</title>
+
+</head>
+<body>
+  <h2>Json editor</h2>
+<div id='viewer'>
+
+</div>
+<script>
+     //We can modify one thing at a time
+
+  //récup le json du lien
+  //fetch('https://pioupiou.omniscol.com/api/dashboard/classrooms/20191111-20191117?auth=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzY2wiOiJwaW91cGlvdSIsInVpZCI6ImZsb3JpYW4tYmFydGhvbGluIiwiYXBpIjp7Im9zX2Rhc2hib2FyZF9jbGFzc3Jvb21zX2dldCI6e319LCJleHAiOjE1OTk2OTYwMDB9.XGLrqKvrj5bjr5UIDcu5xboL6pip7oGgSAnig5XYiQk')
+  fetch('http://localhost:3000/omniscol_pioupiou_dbdump_2020-08-02T15-08-55.json')
+  .then(function(response) {
+    return response.json();
+  })
+  .then(function(json) {
+    thejsonFile = json;
+    //jsonFile = JSON.parse('["monday",null,"wednesday","thursday","friday","tuesday", {"key1": "value1", "key2": "value2", "key3": "value3", "key4": ["coucou1", "coucou2", "coucou3"]} ]');
+    console.log(thejsonFile);
+    let startDiv = $("#viewer")
+    let myViewer = new ViewerJson(startDiv, thejsonFile);
+
+  })
+
+</script>
+</body>
+</html>
